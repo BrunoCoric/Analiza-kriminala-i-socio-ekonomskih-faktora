@@ -3,20 +3,24 @@ title: "Analiza kriminala i socio-ekonomskih faktora"
 author: "Bruno Ćorić, Filip Škrlec, Jelena Matečić, Iva Zekić"
 date: "11/6/2020"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 library(dplyr)
 library(knitr)
+library(lubridate)
+library(magrittr)
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
 
 ## Učitavanje podataka
 
 Imamo dva skupa podataka kriminala i socio-ekonomskih faktora za grad Chicago.
+
 
 ```{r}
 crimeDataset <- read.csv("crime_datasets/Crimes_-_One_year_prior_to_present.csv"
@@ -33,6 +37,7 @@ str(povertyDataset)
 
 ```
 
+
 Faktorizirat ćemo podatke koje bi bilo logično faktorizirati kao što su podaci 
 u stupcu Arrest,Domestic.
 
@@ -40,6 +45,7 @@ u stupcu Arrest,Domestic.
 crimeDataset$ARREST <- as.factor(crimeDataset$ARREST)
 crimeDataset$DOMESTIC <- as.factor(crimeDataset$DOMESTIC)
 ```
+
 
 Provjeravamo fale li nam neki podaci u najbitnim kategorijama u oba dataseta.
 
@@ -49,15 +55,16 @@ sum(is.na(crimeDataset[s]))
 sum(is.na(povertyDataset))
 ```
 
+
 ## Razlika učestalosti zločina ovisno o tome koje je doba dana
 
 Podijelit ćemo dan na 3 dijela. Od 5 do 13 će biti prvi dio dana. Od 13 do 21
 drugi dio dana, a od 21 do 5 treći dio dana.
 
-```{r, echo=False}
+```{r}
 
 timeOfTheDay <- mdy_hms(crimeDataset$DATE..OF.OCCURRENCE) %>% hour
-timeOfTheDay <- sapply(d, function(x) {
+timeOfTheDay <- sapply(timeOfTheDay, function(x) {
   if(x >= 5 & x < 13) {
     "morning"
   } else if(x >= 13 & x < 21) {
@@ -66,7 +73,7 @@ timeOfTheDay <- sapply(d, function(x) {
     "evening"
   }
 },simplify="vector")
-timeOfTheDay <- as.factor(d)
+timeOfTheDay <- as.factor(timeOfTheDay)
 crimeDataset$TIME.OF.DAY <- timeOfTheDay
 head(crimeDataset[c("DATE..OF.OCCURRENCE","TIME.OF.DAY")])
 ```
