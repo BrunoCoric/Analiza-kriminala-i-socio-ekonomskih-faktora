@@ -96,5 +96,66 @@ kable(table(dangerousCrimes))
 dangerous <- table(crimeDataset$TIME.OF.DAY, dangerousCrimes)
 kable(dangerous)
 chisq.test(dangerous, correct = FALSE)
-```
 
+
+kable(table(povertyDataset$Below.Poverty.Level, povertyDataset$Assault..Homicide.))
+povertyDataset$per
+
+library("ggpubr")
+ggscatter(povertyDataset, x = "Assault..Homicide.", y = "Unemployment", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Assaults(Homicide) per 100 000 residents", ylab = "Unemployment percentage")
+
+ggscatter(povertyDataset, x = "Firearm.related", y = "Unemployment", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Firearm-related crimes per 100 000 residents", ylab = "Unemployment percentage")
+
+ggscatter(povertyDataset, x = "Assault..Homicide.", y = "No.High.School.Diploma", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Assaults(Homicide) per 100 000 residents", ylab = "No high school diploma percentage")
+
+ggscatter(povertyDataset, x = "Firearm.related", y = "No.High.School.Diploma", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Firearm-related crimes per 100 000 residents", ylab = "No high school diploma percentage")
+ggscatter(povertyDataset, x = "Assault..Homicide.", y = "Per.Capita.Income", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Assaults(Homicide) per 100 000 residents", ylab = "Income per capita")
+
+ggscatter(povertyDataset, x = "Firearm.related", y = "Per.Capita.Income", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Firearm-related crimes per 100 000 residents", ylab = "Income per capita")
+
+ggscatter(povertyDataset, x = "Assault..Homicide.", y = "Crowded.Housing", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Assaults(Homicide) per 100 000 residents", ylab = "Crowded housing percentage")
+
+ggscatter(povertyDataset, x = "Firearm.related", y = "Crowded.Housing", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Firearm-related crimes per 100 000 residents", ylab = "Crowded housing percentage")
+
+ggscatter(povertyDataset, x = "Assault..Homicide.", y = "Below.Poverty.Level", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Assaults(Homicide) per 100 000 residents", ylab = "Percentage of people below poverty level")
+
+ggscatter(povertyDataset, x = "Firearm.related", y = "Below.Poverty.Level", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Firearm-related crimes per 100 000 residents", ylab = "Percentage of people below poverty level")
+ggscatter(povertyDataset, x = "Assault..Homicide.", y = "Dependency", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Assaults(Homicide) per 100 000 residents", ylab = "Dependecy percentage")
+ggscatter(povertyDataset, x = "Firearm.related", y = "Dependency", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Firearm-related crimes per 100 000 residents", ylab = "Dependecy percentage")
+```
