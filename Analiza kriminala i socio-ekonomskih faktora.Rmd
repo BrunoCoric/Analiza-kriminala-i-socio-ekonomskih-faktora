@@ -96,8 +96,9 @@ kable(table(dangerousCrimes))
 dangerous <- table(crimeDataset$TIME.OF.DAY, dangerousCrimes)
 kable(dangerous)
 chisq.test(dangerous, correct = FALSE)
+```
 
-
+```{r}
 kable(table(povertyDataset$Below.Poverty.Level, povertyDataset$Assault..Homicide.))
 povertyDataset$per
 
@@ -159,3 +160,27 @@ ggscatter(povertyDataset, x = "Firearm.related", y = "Dependency",
           cor.coef = TRUE, cor.method = "pearson",
           xlab = "Firearm-related crimes per 100 000 residents", ylab = "Dependecy percentage")
 ```
+
+## Je li učestalost krađa veća od učestalosti kriminala vezanih za narkotike?
+
+U varijablu 'description' odvajamo objekt PRIMARY.DESCRIPTION iz našeg skupa podataka crimeDataset. Zatim tu varijablu pretvara u skup podataka ali na način da se sve iste vrijednosti prebroje i upišu u stupaca Freq. U varijable krada i narkotici odvojimo podatke vezane za te zlocine. U varijable broj_krada i broj_narkotici zatim stavljamo sumu retka freq iz prethodnih varijabli.
+
+```{r}
+description <- crimeDataset$PRIMARY.DESCRIPTION
+
+description <- as.data.frame(table(description))
+
+krada <- description[c(18, 28, 31),]
+narkotici <- description[c(19, 23),]
+
+broj_krada <- sum(krada$Freq)
+broj_narkotici <- sum(narkotici$Freq)
+
+cat("Učestalost krađa: ")
+broj_krada
+cat("\n")
+cat("Učestalost kriminala vezanih za narkotike: ")
+broj_narkotici
+cat("\n")
+```
+Očito je da je učestalost krađa oko 7 puta veća od učestalosti kriminala vezanih za narkotike.
