@@ -3,9 +3,9 @@ title: "Analiza kriminala i socio-ekonomskih faktora"
 author: "Bruno Ćorić, Filip Škrlec, Jelena Matečić, Iva Zekić"
 date: "11/6/2020"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -104,11 +104,9 @@ chisq.test(dangerous, correct = FALSE)
 Zaključujemo da se razlikuje količina opasnih i neopasnih zločina ovisno o tome
 koje je doba dana.
 
-##Korelacija među zločinima i socio ekonomskih faktorima
+##Korelacija između zločina i socio ekonomskih faktora
 
 ```{r}
-kable(table(povertyDataset$Below.Poverty.Level, povertyDataset$Assault..Homicide.))
-povertyDataset$per
 
 library("ggpubr")
 ggscatter(povertyDataset, x = "Assault..Homicide.", y = "Unemployment", 
