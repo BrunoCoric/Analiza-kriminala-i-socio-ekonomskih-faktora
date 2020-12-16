@@ -13,6 +13,7 @@ library(dplyr)
 library(knitr)
 library(lubridate)
 library(magrittr)
+library(ggpubr)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -79,14 +80,16 @@ head(crimeDataset[c("DATE..OF.OCCURRENCE","TIME.OF.DAY")])
 pie(table(crimeDataset$TIME.OF.DAY))
 ```
 
+
+
 Napravit ćemo test o homogenosti u kojem želimo viditi postoji li razlika u 
 količini zločina s obzirom na doba dana.
+
 Napravit ćemo test homogenosti u kojem ćemo provjeriti je li broj zločina 
 opasnih po život jednak za sva 3 doba dana. Zločine koje smo uzeli da su 
 opasni po život nalaze se u varijabli `dangCrimes`.
 
 ```{r, echo=FALSE}
-kable(table(crimeDataset$PRIMARY.DESCRIPTION))
 dangCrimes <- c("ARSON", "ASSAULT","BATTERY","BURGLARY","CRIM SEXUAL ASSAULT",
                 "CRIMINAL DAMAGE", "CRIMINAL SEXUAL ASSAULT","CRIMINAL TRESPASS"
                 , "HOMICIDE","KIDNAPPING")
@@ -97,6 +100,11 @@ dangerous <- table(crimeDataset$TIME.OF.DAY, dangerousCrimes)
 kable(dangerous)
 chisq.test(dangerous, correct = FALSE)
 ```
+
+Zaključujemo da se razlikuje količina opasnih i neopasnih zločina ovisno o tome
+koje je doba dana.
+
+##Korelacija među zločinima i socio ekonomskih faktorima
 
 ```{r}
 kable(table(povertyDataset$Below.Poverty.Level, povertyDataset$Assault..Homicide.))
