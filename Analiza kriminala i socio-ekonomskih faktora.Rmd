@@ -171,6 +171,7 @@ ggscatter(povertyDataset, x = "Firearm.related", y = "Dependency",
 
 U varijablu 'description' odvajamo objekt PRIMARY.DESCRIPTION iz našeg skupa podataka crimeDataset. Zatim tu varijablu pretvara u skup podataka ali na način da se sve iste vrijednosti prebroje i upišu u stupaca Freq. U varijable krada i narkotici odvojimo podatke vezane za te zlocine. U varijable broj_krada i broj_narkotici zatim stavljamo sumu retka freq iz prethodnih varijabli.
 
+
 ```{r}
 description <- crimeDataset$PRIMARY.DESCRIPTION
 
@@ -189,4 +190,40 @@ cat("Učestalost kriminala vezanih za narkotike: ")
 broj_narkotici
 cat("\n")
 ```
-Očito je da je učestalost krađa oko 7 puta veća od učestalosti kriminala vezanih za narkotike.
+
+
+```{r jednostavna regresija}
+
+fit.FirearmUnemployment = lm(Firearm.related~Unemployment,data=povertyDataset) #linearni model broja iznajmljenih bicikla (cnt) i temperature tog dana (temp)
+
+
+plot(povertyDataset$Firearm.related,povertyDataset$Unemployment) #graficki prikaz podataka
+lines(povertyDataset$Firearm.related,fit.FirearmUnemployment$fitted.values,col='red') #graficki prikaz procijenjenih vrijednosti iz modela
+
+fit.AssaultUnemployment = lm(Assault..Homicide.~Unemployment,data=povertyDataset) #linearni model broja iznajmljenih bicikla (cnt) i temperature tog dana (temp)
+
+
+plot(povertyDataset$Assault..Homicide.,povertyDataset$Unemployment) #graficki prikaz podataka
+lines(povertyDataset$Assault..Homicide.,fit.AssaultUnemployment$fitted.values,col='red') #graficki prikaz procijenjenih vrijednosti iz modela
+
+selected.model = fit.FirearmUnemployment
+
+plot(selected.model$residuals) #gledajuci reziduale na ovaj nacin tesko je suditi o normalnosti
+
+#histogram je vrlo interpretativan
+hist((selected.model$residuals))
+hist(rstandard(selected.model))
+
+#q-q plot reziduala s linijom normalne distribucije
+qqnorm(rstandard(selected.model))
+qqline(rstandard(selected.model))
+
+plot(selected.model$fitted.values,selected.model$residuals) #reziduale je dobro prikazati u ovisnosti o procjenama modela
+
+#KS test na normalnost 
+ks.test(rstandard(fit.FirearmUnemployment),'pnorm')
+
+require(nortest)
+lillie.test(rstandard(fit.windspeed))
+
+```
