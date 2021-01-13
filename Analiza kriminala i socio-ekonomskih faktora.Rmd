@@ -245,6 +245,8 @@ ks.test(rstandard(fit.AssaultUnemployment),'pnorm')
 
 require(nortest)
 lillie.test(rstandard(fit.AssaultUnemployment))
+summary(fit.FirearmUnemployment)
+summary(fit.AssaultUnemployment)
 
 ```
 
@@ -301,5 +303,53 @@ ks.test(rstandard(fit.AssaultPoverty),'pnorm')
 
 require(nortest)
 lillie.test(rstandard(fit.AssaultPoverty))
+cor(povertyDataset$Firearm.related,povertyDataset$Below.Poverty.Level)
+cor.test(povertyDataset$Firearm.related,povertyDataset$Below.Poverty.Level)
+summary(fit.FirearmPoverty)
+cor(povertyDataset$Assault..Homicide.,povertyDataset$Below.Poverty.Level)
+cor.test(povertyDataset$Assault..Homicide.,povertyDataset$Below.Poverty.Level)
+summary(fit.AssaultPoverty)
+
+```
+
+
+## Višestruka regresija
+
+Prije procjene modela višestruke regresije potrebno je provjeriti da pojedini parovi varijabli nisu (previše) korelirani. U principu je određena korelacija između varijabli neizbježna, ali varijable s vrlo visokom korelacijom će uzrokovati probleme u interpretaciji regresijskih rezultata.
+
+```{r avisestruka regresija s koreliranim varijablama}
+
+fit.Firearm = lm(Firearm.related ~ Below.Poverty.Level + Unemployment, povertyDataset) #regresija s jako koreliranim varijablama
+summary(fit.Firearm)
+cor(povertyDataset$Unemployment,povertyDataset$Below.Poverty.Level)
+
+fit.Assault = lm(Assault..Homicide. ~ Below.Poverty.Level + Unemployment, povertyDataset) #regresija s jako koreliranim varijablama
+summary(fit.Assault)
+
+fit.Firearm2 = lm(Firearm.related ~ Crowded.Housing + No.High.School.Diploma, povertyDataset) #regresija s jako koreliranim varijablama
+summary(fit.Firearm2)
+cor(povertyDataset$Crowded.Housing,povertyDataset$No.High.School.Diploma)
+
+fit.Assault2 = lm(Assault..Homicide. ~ Crowded.Housing + No.High.School.Diploma, povertyDataset) #regresija s jako koreliranim varijablama
+summary(fit.Assault2)
+```
+
+Regresija s jako koreliranim ulaznim varijablama će uglavnom dati neke rezultate, ali na temelju njih ne možemo donositi nikakve zaključke. U slučaju savršene linearne zavisnosti ili koreliranosti ulaznih varijabli, procjena regresijskog modela će biti nestabilna i barem jedan koeficijent će biti NA.
+
+Stoga je potrebo odabrati onaj podskup varijabli za koje smatramo da objašnjavaju različite efekte u podatcima i nisu međusobno (previše) korelirane. 
+
+```{r cor}
+
+cor(cbind(povertyDataset$Below.Poverty.Level,povertyDataset$Per.Capita.Income,povertyDataset$Crowded.Housing)) # korelacijski koeficijenti parova regresora
+
+```
+
+```{r visestruka regresija}
+fit.multi = lm(Firearm.related ~ Below.Poverty.Level + Per.Capita.Income + Crowded.Housing, povertyDataset)
+summary(fit.multi)
+
+fit.multi = lm(Assault..Homicide. ~ Below.Poverty.Level + Per.Capita.Income + Crowded.Housing, povertyDataset)
+summary(fit.multi)
+
 
 ```
