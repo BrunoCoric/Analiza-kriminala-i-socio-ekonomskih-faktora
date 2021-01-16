@@ -109,62 +109,33 @@ koje je doba dana.
 ```{r}
 
 library("ggpubr")
-ggscatter(povertyDataset, x = "Assault..Homicide.", y = "Unemployment", 
+ggscatter(povertyDataset, x = "Unemployment", y = "Firearm.related", 
           add = "reg.line", conf.int = TRUE, 
           cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Assaults(Homicide) per 100 000 residents", ylab = "Unemployment percentage")
+          xlab = "Unemployment percentage", ylab = "Firearm-related crimes per 100 000 residents")
+ggscatter(povertyDataset, x = "Unemployment", y = "Assault..Homicide.", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Unemployment percentage", ylab = "Assaults(Homicide) per 100 000 residents")
 
-ggscatter(povertyDataset, x = "Firearm.related", y = "Unemployment", 
+ggscatter(povertyDataset, x = "Below.Poverty.Level", y = "Firearm.related", 
           add = "reg.line", conf.int = TRUE, 
           cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Firearm-related crimes per 100 000 residents", ylab = "Unemployment percentage")
+          xlab = "Percentage of people below poverty level", ylab = "Firearm-related crimes per 100 000 residents")
+ggscatter(povertyDataset, x = "Below.Poverty.Level", y = "Assault..Homicide.", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Percentage of people below poverty level", ylab = "Assaults(Homicide) per 100 000 residents")
 
-ggscatter(povertyDataset, x = "Assault..Homicide.", y = "No.High.School.Diploma", 
+ggscatter(povertyDataset, x = "Dependency", y = "Firearm.related", 
           add = "reg.line", conf.int = TRUE, 
           cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Assaults(Homicide) per 100 000 residents", ylab = "No high school diploma percentage")
+          xlab = "Dependecy percentage", ylab = "Firearm-related crimes per 100 000 residents")
+ggscatter(povertyDataset, x = "Dependency", y = "Assault..Homicide.", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Dependecy percentage", ylab = "Assaults(Homicide) per 100 000 residents")
 
-ggscatter(povertyDataset, x = "Firearm.related", y = "No.High.School.Diploma", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Firearm-related crimes per 100 000 residents", ylab = "No high school diploma percentage")
-ggscatter(povertyDataset, x = "Assault..Homicide.", y = "Per.Capita.Income", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Assaults(Homicide) per 100 000 residents", ylab = "Income per capita")
-
-ggscatter(povertyDataset, x = "Firearm.related", y = "Per.Capita.Income", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Firearm-related crimes per 100 000 residents", ylab = "Income per capita")
-
-ggscatter(povertyDataset, x = "Assault..Homicide.", y = "Crowded.Housing", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Assaults(Homicide) per 100 000 residents", ylab = "Crowded housing percentage")
-
-ggscatter(povertyDataset, x = "Firearm.related", y = "Crowded.Housing", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Firearm-related crimes per 100 000 residents", ylab = "Crowded housing percentage")
-
-ggscatter(povertyDataset, x = "Assault..Homicide.", y = "Below.Poverty.Level", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Assaults(Homicide) per 100 000 residents", ylab = "Percentage of people below poverty level")
-
-ggscatter(povertyDataset, x = "Firearm.related", y = "Below.Poverty.Level", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Firearm-related crimes per 100 000 residents", ylab = "Percentage of people below poverty level")
-ggscatter(povertyDataset, x = "Assault..Homicide.", y = "Dependency", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Assaults(Homicide) per 100 000 residents", ylab = "Dependecy percentage")
-ggscatter(povertyDataset, x = "Firearm.related", y = "Dependency", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Firearm-related crimes per 100 000 residents", ylab = "Dependecy percentage")
 ```
 
 ## Je li učestalost krađa veća od učestalosti kriminala vezanih za narkotike?
@@ -194,31 +165,19 @@ cat("\n")
 
 ```{r jednostavna regresija}
 
-fit.FirearmUnemployment = lm(Firearm.related~Unemployment,data=povertyDataset) #linearni model broja iznajmljenih bicikla (cnt) i temperature tog dana (temp)
-
+fit.FirearmUnemployment = lm(Firearm.related~Unemployment,data=povertyDataset) #model za regresiju
 
 plot(povertyDataset$Firearm.related,povertyDataset$Unemployment) #graficki prikaz podataka
-lines(povertyDataset$Firearm.related,fit.FirearmUnemployment$fitted.values,col='red') #graficki prikaz procijenjenih vrijednosti iz modela
-
-fit.AssaultUnemployment = lm(Assault..Homicide.~Unemployment,data=povertyDataset) #linearni model broja iznajmljenih bicikla (cnt) i temperature tog dana (temp)
-
-
-plot(povertyDataset$Assault..Homicide.,povertyDataset$Unemployment) #graficki prikaz podataka
-lines(povertyDataset$Assault..Homicide.,fit.AssaultUnemployment$fitted.values,col='red') #graficki prikaz procijenjenih vrijednosti iz modela
 
 selected.model = fit.FirearmUnemployment
 
-plot(selected.model$residuals) #gledajuci reziduale na ovaj nacin tesko je suditi o normalnosti
-
-#histogram je vrlo interpretativan
+#histogrami
 hist((selected.model$residuals))
 hist(rstandard(selected.model))
 
-#q-q plot reziduala s linijom normalne distribucije
+#q-q plot
 qqnorm(rstandard(selected.model))
 qqline(rstandard(selected.model))
-
-plot(selected.model$fitted.values,selected.model$residuals) #reziduale je dobro prikazati u ovisnosti o procjenama modela
 
 #KS test na normalnost 
 ks.test(rstandard(fit.FirearmUnemployment),'pnorm')
@@ -226,130 +185,163 @@ ks.test(rstandard(fit.FirearmUnemployment),'pnorm')
 require(nortest)
 lillie.test(rstandard(fit.FirearmUnemployment))
 
+summary(fit.FirearmUnemployment)
+
+fit.AssaultUnemployment = lm(Assault..Homicide.~Unemployment,data=povertyDataset) #model za regresiju
+
+plot(povertyDataset$Assault..Homicide.,povertyDataset$Unemployment) #graficki prikaz podataka
+
 selected.model = fit.AssaultUnemployment
 
-plot(selected.model$residuals) #gledajuci reziduale na ovaj nacin tesko je suditi o normalnosti
-
-#histogram je vrlo interpretativan
+#histogrami
 hist((selected.model$residuals))
 hist(rstandard(selected.model))
 
-#q-q plot reziduala s linijom normalne distribucije
+#q-q plot
 qqnorm(rstandard(selected.model))
 qqline(rstandard(selected.model))
-
-plot(selected.model$fitted.values,selected.model$residuals) #reziduale je dobro prikazati u ovisnosti o procjenama modela
 
 #KS test na normalnost 
 ks.test(rstandard(fit.AssaultUnemployment),'pnorm')
 
 require(nortest)
 lillie.test(rstandard(fit.AssaultUnemployment))
-summary(fit.FirearmUnemployment)
 summary(fit.AssaultUnemployment)
 
-```
-
-```{r jednostavna regresija}
-
-fit.FirearmPoverty = lm(Firearm.related~Below.Poverty.Level,data=povertyDataset) #linearni model broja iznajmljenih bicikla (cnt) i temperature tog dana (temp)
-
+fit.FirearmBelowPovertyLevel = lm(Firearm.related~Below.Poverty.Level,data=povertyDataset) #model za regresiju
 
 plot(povertyDataset$Firearm.related,povertyDataset$Below.Poverty.Level) #graficki prikaz podataka
-lines(povertyDataset$Firearm.related,fit.FirearmPoverty$fitted.values,col='red') #graficki prikaz procijenjenih vrijednosti iz modela
 
-fit.AssaultPoverty = lm(Assault..Homicide.~Below.Poverty.Level,data=povertyDataset) #linearni model broja iznajmljenih bicikla (cnt) i temperature tog dana (temp)
+selected.model = fit.FirearmBelowPovertyLevel
 
+#histogrami
+hist((selected.model$residuals))
+hist(rstandard(selected.model))
+
+#q-q plot
+qqnorm(rstandard(selected.model))
+qqline(rstandard(selected.model))
+
+#KS test na normalnost 
+ks.test(rstandard(fit.FirearmBelowPovertyLevel),'pnorm')
+
+require(nortest)
+lillie.test(rstandard(fit.FirearmBelowPovertyLevel))
+
+summary(fit.FirearmBelowPovertyLevel)
+
+fit.AssaultBelowPovertyLevel = lm(Assault..Homicide.~Below.Poverty.Level,data=povertyDataset) #model za regresiju
 
 plot(povertyDataset$Assault..Homicide.,povertyDataset$Below.Poverty.Level) #graficki prikaz podataka
-lines(povertyDataset$Assault..Homicide.,fit.AssaultPoverty$fitted.values,col='red') #graficki prikaz procijenjenih vrijednosti iz modela
 
-selected.model = fit.FirearmPoverty
+selected.model = fit.AssaultBelowPovertyLevel
 
-plot(selected.model$residuals) #gledajuci reziduale na ovaj nacin tesko je suditi o normalnosti
-
-#histogram je vrlo interpretativan
+#histogrami
 hist((selected.model$residuals))
 hist(rstandard(selected.model))
 
-#q-q plot reziduala s linijom normalne distribucije
+#q-q plot
 qqnorm(rstandard(selected.model))
 qqline(rstandard(selected.model))
 
-plot(selected.model$fitted.values,selected.model$residuals) #reziduale je dobro prikazati u ovisnosti o procjenama modela
-
 #KS test na normalnost 
-ks.test(rstandard(fit.FirearmPoverty),'pnorm')
+ks.test(rstandard(fit.AssaultBelowPovertyLevel),'pnorm')
 
 require(nortest)
-lillie.test(rstandard(fit.FirearmPoverty))
+lillie.test(rstandard(fit.AssaultBelowPovertyLevel))
+summary(fit.AssaultBelowPovertyLevel)
 
-selected.model = fit.AssaultPoverty
+fit.FirearmDependency = lm(Firearm.related~Dependency,data=povertyDataset) #model za regresiju
 
-plot(selected.model$residuals) #gledajuci reziduale na ovaj nacin tesko je suditi o normalnosti
+plot(povertyDataset$Firearm.related,povertyDataset$Dependency) #graficki prikaz podataka
 
-#histogram je vrlo interpretativan
+selected.model = fit.FirearmDependency
+
+#histogrami
 hist((selected.model$residuals))
 hist(rstandard(selected.model))
 
-#q-q plot reziduala s linijom normalne distribucije
+#q-q plot
 qqnorm(rstandard(selected.model))
 qqline(rstandard(selected.model))
 
-plot(selected.model$fitted.values,selected.model$residuals) #reziduale je dobro prikazati u ovisnosti o procjenama modela
-
 #KS test na normalnost 
-ks.test(rstandard(fit.AssaultPoverty),'pnorm')
+ks.test(rstandard(fit.FirearmDependency),'pnorm')
 
 require(nortest)
-lillie.test(rstandard(fit.AssaultPoverty))
-cor(povertyDataset$Firearm.related,povertyDataset$Below.Poverty.Level)
-cor.test(povertyDataset$Firearm.related,povertyDataset$Below.Poverty.Level)
-summary(fit.FirearmPoverty)
-cor(povertyDataset$Assault..Homicide.,povertyDataset$Below.Poverty.Level)
-cor.test(povertyDataset$Assault..Homicide.,povertyDataset$Below.Poverty.Level)
-summary(fit.AssaultPoverty)
+lillie.test(rstandard(fit.FirearmDependency))
+
+summary(fit.FirearmDependency)
+
+fit.AssaultDependency = lm(Assault..Homicide.~Dependency,data=povertyDataset) #model za regresiju
+
+plot(povertyDataset$Assault..Homicide.,povertyDataset$Dependency) #graficki prikaz podataka
+
+selected.model = fit.AssaultDependency
+
+#histogrami
+hist((selected.model$residuals))
+hist(rstandard(selected.model))
+
+#q-q plot
+qqnorm(rstandard(selected.model))
+qqline(rstandard(selected.model))
+
+#KS test na normalnost 
+ks.test(rstandard(fit.AssaultDependency),'pnorm')
+
+require(nortest)
+lillie.test(rstandard(fit.AssaultDependency))
+summary(fit.AssaultDependency)
 
 ```
 
 
 ## Višestruka regresija
 
-Prije procjene modela višestruke regresije potrebno je provjeriti da pojedini parovi varijabli nisu (previše) korelirani. U principu je određena korelacija između varijabli neizbježna, ali varijable s vrlo visokom korelacijom će uzrokovati probleme u interpretaciji regresijskih rezultata.
+```{r visestruke regresija}
 
-```{r avisestruka regresija s koreliranim varijablama}
+cor(cbind(povertyDataset$Below.Poverty.Level,povertyDataset$Per.Capita.Income,povertyDataset$Crowded.Housing,povertyDataset$Dependency,povertyDataset$No.High.School.Diploma,povertyDataset$Unemployment)) # provjera korelacijskih koeficijenata za sve parove regresora
 
-fit.Firearm = lm(Firearm.related ~ Below.Poverty.Level + Unemployment, povertyDataset) #regresija s jako koreliranim varijablama
-summary(fit.Firearm)
-cor(povertyDataset$Unemployment,povertyDataset$Below.Poverty.Level)
+fit.Firearm1 = lm(Firearm.related ~ Unemployment + Below.Poverty.Level, povertyDataset) 
+summary(fit.Firearm1)
 
-fit.Assault = lm(Assault..Homicide. ~ Below.Poverty.Level + Unemployment, povertyDataset) #regresija s jako koreliranim varijablama
-summary(fit.Assault)
+fit.Firearm4 = lm(Firearm.related ~ No.High.School.Diploma + Unemployment, povertyDataset) 
+summary(fit.Firearm4)
 
-fit.Firearm2 = lm(Firearm.related ~ Crowded.Housing + No.High.School.Diploma, povertyDataset) #regresija s jako koreliranim varijablama
-summary(fit.Firearm2)
-cor(povertyDataset$Crowded.Housing,povertyDataset$No.High.School.Diploma)
+fit.Firearm5 = lm(Firearm.related ~ I(Below.Poverty.Level^2) + Per.Capita.Income, povertyDataset) 
+summary(fit.Firearm5)
 
-fit.Assault2 = lm(Assault..Homicide. ~ Crowded.Housing + No.High.School.Diploma, povertyDataset) #regresija s jako koreliranim varijablama
-summary(fit.Assault2)
-```
+fit.Firearm6 = lm(Firearm.related ~ Per.Capita.Income + Crowded.Housing, povertyDataset) 
+summary(fit.Firearm6)
 
-Regresija s jako koreliranim ulaznim varijablama će uglavnom dati neke rezultate, ali na temelju njih ne možemo donositi nikakve zaključke. U slučaju savršene linearne zavisnosti ili koreliranosti ulaznih varijabli, procjena regresijskog modela će biti nestabilna i barem jedan koeficijent će biti NA.
+fit.Firearm7 = lm(Firearm.related ~ Dependency + No.High.School.Diploma + Below.Poverty.Level, povertyDataset) 
+summary(fit.Firearm7)
 
-Stoga je potrebo odabrati onaj podskup varijabli za koje smatramo da objašnjavaju različite efekte u podatcima i nisu međusobno (previše) korelirane. 
+fit.Firearm8 = lm(Firearm.related ~ Dependency + No.High.School.Diploma + Unemployment, povertyDataset) 
+summary(fit.Firearm8)
 
-```{r cor}
+fit.Firearm9 = lm(Firearm.related ~ Dependency + No.High.School.Diploma + Unemployment + Below.Poverty.Level, povertyDataset) 
+summary(fit.Firearm9)
 
-cor(cbind(povertyDataset$Below.Poverty.Level,povertyDataset$Per.Capita.Income,povertyDataset$Crowded.Housing)) # korelacijski koeficijenti parova regresora
+fit.Assault1 = lm(Assault..Homicide. ~ Unemployment + Below.Poverty.Level, povertyDataset) 
+summary(fit.Assault1)
 
-```
+fit.Assault4 = lm(Assault..Homicide. ~ No.High.School.Diploma + Unemployment, povertyDataset) 
+summary(fit.Assault4)
 
-```{r visestruka regresija}
-fit.multi = lm(Firearm.related ~ Below.Poverty.Level + Per.Capita.Income + Crowded.Housing, povertyDataset)
-summary(fit.multi)
+fit.Assault5 = lm(Assault..Homicide. ~ I(Below.Poverty.Level^2) + Per.Capita.Income, povertyDataset) 
+summary(fit.Assault5)
 
-fit.multi = lm(Assault..Homicide. ~ Below.Poverty.Level + Per.Capita.Income + Crowded.Housing, povertyDataset)
-summary(fit.multi)
+fit.Assault6 = lm(Assault..Homicide. ~ Per.Capita.Income + Crowded.Housing, povertyDataset) 
+summary(fit.Assault6)
 
+fit.Assault7 = lm(Assault..Homicide. ~ Dependency + No.High.School.Diploma + Below.Poverty.Level, povertyDataset) 
+summary(fit.Assault7)
 
+fit.Assault8 = lm(Assault..Homicide. ~ Dependency + No.High.School.Diploma + Unemployment, povertyDataset) 
+summary(fit.Assault8)
+
+fit.Assault9 = lm(Assault..Homicide. ~ Dependency + No.High.School.Diploma + Unemployment + Below.Poverty.Level, povertyDataset) 
+summary(fit.Assault9)
 ```
