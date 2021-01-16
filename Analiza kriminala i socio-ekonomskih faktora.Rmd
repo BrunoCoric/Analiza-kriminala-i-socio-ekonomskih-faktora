@@ -113,28 +113,33 @@ koje je doba dana.
 
 ## Je li učestalost krađa veća od učestalosti kriminala vezanih za narkotike?
 
-U varijablu 'description' odvajamo objekt PRIMARY.DESCRIPTION iz našeg skupa podataka crimeDataset. Zatim tu varijablu pretvara u skup podataka ali na način da se sve iste vrijednosti prebroje i upišu u stupaca Freq. U varijable krada i narkotici odvojimo podatke vezane za te zlocine. U varijable broj_krada i broj_narkotici zatim stavljamo sumu retka freq iz prethodnih varijabli.
+Kreiramo novi dataset pod nazivom krada_narkotici u koji odvajamo samo one zločine koji su vezani uz krađu ili narkotike. Zločini vezani uz krađu su krađa automobila, krađa te pljačka, a zločini vezani uz narkotike su pod varijablom PRIMARY.DESCRIPTION imali ili naznaku "NARCOTICS" ili "OTHER NARCOTIC VIOLATION".
 
 
 ```{r}
-description <- crimeDataset$PRIMARY.DESCRIPTION
-
-description <- as.data.frame(table(description))
-
-krada <- description[c(18, 28, 31),]
-narkotici <- description[c(19, 23),]
-
-broj_krada <- sum(krada$Freq)
-broj_narkotici <- sum(narkotici$Freq)
-
-cat("Učestalost krađa: ")
-broj_krada
-cat("\n")
-cat("Učestalost kriminala vezanih za narkotike: ")
-broj_narkotici
-cat("\n")
+krada_narkotici = crimeDataset[which(crimeDataset$PRIMARY.DESCRIPTION == 'MOTOR VEHICLE THEFT' | crimeDataset$PRIMARY.DESCRIPTION == 'ROBBERY'| crimeDataset$PRIMARY.DESCRIPTION == 'THEFT' | crimeDataset$PRIMARY.DESCRIPTION == 'NARCOTICS' | crimeDataset$PRIMARY.DESCRIPTION == 'OTHER NARCOTIC VIOLATION'),]
+head(krada_narkotici)
 ```
 
+Nakon toga provjeravamo učestalost kriminala vezanih uz krađu i narkotike te vizualiziramo podatke barplot() funkcijom.
+
+```{r}
+description <- krada_narkotici$PRIMARY.DESCRIPTION
+description <- as.data.frame(table(description))
+
+krada <- description[which(description == 'MOTOR VEHICLE THEFT' |description =='ROBBERY' | description == 'THEFT' ),]
+narkotici <- description[which(description == 'NARCOTICS' |description =='OTHER NARCOTIC VIOLATION'),]
+
+barplot(krada$Freq, main = 'Učestalost zločina vezanih uz krađu')
+barplot(narkotici$Freq, main = 'Učestalost zločina vezanih uz narkotike')
+```
+Pošto nas zanima učestalost zločina vezanih uz krađu i narkotike provodimo test o jednoj proporciji. Gledat ćemo je li učestalost krađa veća od učestalosti kriminala vezanih za narkotike.
+Za nultu hipotezu uzimamo da je p = 0.5,a za alternativnu uzimamo p > 0.5
+```{r}
+res <- prop.test(x = sum(krada$Freq), n =sum(krada$Freq)+sum(narkotici$Freq), p = 0.5, correct = FALSE,alternative = "greater")
+res
+```
+Kako smo dobili jako mali p-vrijednost onda imamo dovoljno dokaza za odbacivanje nulte hipoteze u korist alternativne hipoteze. Zbog toga zaključujemo da je učestalost zločina povezanih s krađom znatno veća od učestalosti zločina povezanih s narkoticima.
 
 ## Veza između socio-ekonomskih faktora i pojedine kategorije kriminala
 
