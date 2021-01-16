@@ -3,17 +3,17 @@ title: "Analiza kriminala i socio-ekonomskih faktora"
 author: "Bruno Ćorić, Filip Škrlec, Jelena Matečić, Iva Zekić"
 date: "11/6/2020"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 library(dplyr)
 library(knitr)
 library(lubridate)
+library(ggplot2)
 library(magrittr)
-library(ggpubr)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -32,10 +32,6 @@ povertyDataset <- read.csv("crime_datasets/Chicago_poverty_and_crime.csv"
 
 head(crimeDataset)
 head(povertyDataset)
-
-str(crimeDataset)
-str(povertyDataset)
-
 ```
 
 
@@ -60,7 +56,7 @@ sum(is.na(povertyDataset))
 ## Razlika učestalosti zločina ovisno o tome koje je doba dana
 
 Podijelit ćemo dan na 3 dijela. Od 5 do 13 će biti prvi dio dana. Od 13 do 21
-drugi dio dana, a od 21 do 5 treći dio dana.
+drugi dio dana, a od 20 do 5 treći dio dana.
 
 ```{r}
 
@@ -68,7 +64,7 @@ timeOfTheDay <- mdy_hms(crimeDataset$DATE..OF.OCCURRENCE) %>% hour
 timeOfTheDay <- sapply(timeOfTheDay, function(x) {
   if(x >= 5 & x < 13) {
     "morning"
-  } else if(x >= 13 & x < 21) {
+  } else if(x >= 13 & x < 20) {
     "afternoon"
   } else {
     "evening"
@@ -76,10 +72,21 @@ timeOfTheDay <- sapply(timeOfTheDay, function(x) {
 },simplify="vector")
 timeOfTheDay <- as.factor(timeOfTheDay)
 crimeDataset$TIME.OF.DAY <- timeOfTheDay
+timeOfTheDayCount <- crimeDataset %>% group_by(TIME.OF.DAY) %>% tally
 head(crimeDataset[c("DATE..OF.OCCURRENCE","TIME.OF.DAY")])
-pie(table(crimeDataset$TIME.OF.DAY))
+barplot(table(crimeDataset$TIME.OF.DAY))
 ```
 
+Napravit ćemo goodnes of fit test nad brojem kriminala koji se dogodio ujutro, 
+popodne i navečer. Nulta hipoteza testa je da je očekivana proporcija 1/3 za
+broj kriminala u određenom dijelu dana, tj. da se ne razlikuje broj kriminala
+s obzirom na vrijeme.
+
+```{r}
+chisq.test(timeOfTheDayCount$n)
+```
+
+Odbacujemo nultu hipotezu i zaključujemo da da su proporcije različite.
 
 
 Napravit ćemo test o homogenosti u kojem želimo viditi postoji li razlika u 
@@ -89,7 +96,7 @@ Napravit ćemo test homogenosti u kojem ćemo provjeriti je li broj zločina
 opasnih po život jednak za sva 3 doba dana. Zločine koje smo uzeli da su 
 opasni po život nalaze se u varijabli `dangCrimes`.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning = FALSE}
 dangCrimes <- c("ARSON", "ASSAULT","BATTERY","BURGLARY","CRIM SEXUAL ASSAULT",
                 "CRIMINAL DAMAGE", "CRIMINAL SEXUAL ASSAULT","CRIMINAL TRESPASS"
                 , "HOMICIDE","KIDNAPPING")
@@ -103,40 +110,6 @@ chisq.test(dangerous, correct = FALSE)
 
 Zaključujemo da se razlikuje količina opasnih i neopasnih zločina ovisno o tome
 koje je doba dana.
-
-##Korelacija između zločina i socio ekonomskih faktora
-
-```{r}
-
-library("ggpubr")
-ggscatter(povertyDataset, x = "Unemployment", y = "Firearm.related", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Unemployment percentage", ylab = "Firearm-related crimes per 100 000 residents")
-ggscatter(povertyDataset, x = "Unemployment", y = "Assault..Homicide.", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Unemployment percentage", ylab = "Assaults(Homicide) per 100 000 residents")
-
-ggscatter(povertyDataset, x = "Below.Poverty.Level", y = "Firearm.related", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Percentage of people below poverty level", ylab = "Firearm-related crimes per 100 000 residents")
-ggscatter(povertyDataset, x = "Below.Poverty.Level", y = "Assault..Homicide.", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Percentage of people below poverty level", ylab = "Assaults(Homicide) per 100 000 residents")
-
-ggscatter(povertyDataset, x = "Dependency", y = "Firearm.related", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Dependecy percentage", ylab = "Firearm-related crimes per 100 000 residents")
-ggscatter(povertyDataset, x = "Dependency", y = "Assault..Homicide.", 
-          add = "reg.line", conf.int = TRUE, 
-          cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Dependecy percentage", ylab = "Assaults(Homicide) per 100 000 residents")
-
-```
 
 ## Je li učestalost krađa veća od učestalosti kriminala vezanih za narkotike?
 
@@ -163,185 +136,168 @@ cat("\n")
 ```
 
 
-```{r jednostavna regresija}
+## Veza između socio-ekonomskih faktora i pojedine kategorije kriminala
 
-fit.FirearmUnemployment = lm(Firearm.related~Unemployment,data=povertyDataset) #model za regresiju
+Ispitivati ćemo različite varijable koje bi mogle utjecati na "Assault Homicide"
+i "Firearm related" kategroije kriminala.
+Varijable koje ćemo promatrati su (postotci predstavljaju postotak broja 
+stanovništva za određeni kvart):
+- postotak stanovništva koji su siromašni
+- postotak stanovništva koji žive u prenatrpanoj kući
+- postotak ljudi mlađih od 16 ili starijih od 64 koji su financijski
+- postotak ljudi bez diplome srednje škole
+- dohodak po stanovniku
+- postotak ljudi koji nisu zaposleni
 
-plot(povertyDataset$Firearm.related,povertyDataset$Unemployment) #graficki prikaz podataka
+Nacratat ćemo nekoliko grafova kako bi dobili uvid u to kakav odnos imaju
+varijable.
 
-selected.model = fit.FirearmUnemployment
+Vidimo linearan efekt kod nezaposlenosti i siromaštva.
 
-#histogrami
-hist((selected.model$residuals))
-hist(rstandard(selected.model))
+```{r}
+plot(povertyDataset$Unemployment, povertyDataset$Assault..Homicide.)
+plot(povertyDataset$Dependency, povertyDataset$Assault..Homicide.)
+plot(povertyDataset$Below.Poverty.Level, povertyDataset$Assault..Homicide.)
+plot(povertyDataset$No.High.School.Diploma, povertyDataset$Assault..Homicide.)
+plot(povertyDataset$Per.Capita.Income, povertyDataset$Assault..Homicide.)
+plot(povertyDataset$Crowded.Housing, povertyDataset$Assault..Homicide.)
+```
 
-#q-q plot
-qqnorm(rstandard(selected.model))
-qqline(rstandard(selected.model))
+Neke varijable su jako korelirane. Što je i bilo za očekivati.
 
-#KS test na normalnost 
-ks.test(rstandard(fit.FirearmUnemployment),'pnorm')
+```{r}
+cor(povertyDataset$Firearm.related, povertyDataset$Assault..Homicide.)
+cor(povertyDataset$No.High.School.Diploma, povertyDataset$Crowded.Housing)
+cor(povertyDataset$Below.Poverty.Level, povertyDataset$Unemployment)
+cor(povertyDataset$Dependency, povertyDataset$Per.Capita.Income)
+```
 
-require(nortest)
-lillie.test(rstandard(fit.FirearmUnemployment))
+### Jednostavne regresije
 
-summary(fit.FirearmUnemployment)
+Izvodjiti ćemo neke zanimljivije jednostavnije modele.
 
-fit.AssaultUnemployment = lm(Assault..Homicide.~Unemployment,data=povertyDataset) #model za regresiju
+Pošto su Assault Homicide i Firearm related jako korelirani, modeli za njih
+su jako slični.
 
-plot(povertyDataset$Assault..Homicide.,povertyDataset$Unemployment) #graficki prikaz podataka
 
-selected.model = fit.AssaultUnemployment
+Prvo procjenjujemo ubojstva pomoću varijable koja prikazuje nezaposlenost.
+Dobivamo mjeru kvalitete prilagodbe R^2 = 0.664 što je jako dobro za predviđanje
+sa samo jednom varijablom, a i očito je iz grafa.
 
-#histogrami
-hist((selected.model$residuals))
-hist(rstandard(selected.model))
 
-#q-q plot
-qqnorm(rstandard(selected.model))
-qqline(rstandard(selected.model))
-
-#KS test na normalnost 
-ks.test(rstandard(fit.AssaultUnemployment),'pnorm')
-
-require(nortest)
-lillie.test(rstandard(fit.AssaultUnemployment))
+```{r}
+fit.AssaultUnemployment <- lm(Assault..Homicide.~Unemployment,data=povertyDataset)
+plot(povertyDataset$Unemployment, povertyDataset$Assault..Homicide.)
+lines(povertyDataset$Unemployment, fit.AssaultUnemployment$fitted.values)
 summary(fit.AssaultUnemployment)
+ks.test(rstandard(fit.AssaultUnemployment), 'pnorm')
 
-fit.FirearmBelowPovertyLevel = lm(Firearm.related~Below.Poverty.Level,data=povertyDataset) #model za regresiju
+hist(rstandard(fit.AssaultUnemployment))
+qqnorm(rstandard(fit.AssaultUnemployment))
+qqline(rstandard(fit.AssaultUnemployment))
+```
 
-plot(povertyDataset$Firearm.related,povertyDataset$Below.Poverty.Level) #graficki prikaz podataka
+Sada koristimo varijablu No High School Diploma. Uočavamo da reziduali nisu ni
+približno distribuirani po normalnoj distribuciji te je pretpostavka linearne
+regresije narušena što možda upućuje da nam treba neki složeniji model.
 
-selected.model = fit.FirearmBelowPovertyLevel
+```{r}
+fit.AssaultDiploma <- lm(Assault..Homicide.
+                         ~No.High.School.Diploma,data=povertyDataset)
+plot(povertyDataset$No.High.School.Diploma, povertyDataset$Assault..Homicide.)
+lines(povertyDataset$No.High.School.Diploma, fit.AssaultDiploma$fitted.values)
+summary(fit.AssaultDiploma)
+ks.test(rstandard(fit.AssaultDiploma), 'pnorm')
 
-#histogrami
-hist((selected.model$residuals))
-hist(rstandard(selected.model))
+hist(rstandard(fit.AssaultDiploma))
+qqnorm(rstandard(fit.AssaultDiploma))
+qqline(rstandard(fit.AssaultDiploma))
+```
 
-#q-q plot
-qqnorm(rstandard(selected.model))
-qqline(rstandard(selected.model))
+Ako koristimo polinomijalnu regresiju dobivamo puno bolje rezultate
 
-#KS test na normalnost 
-ks.test(rstandard(fit.FirearmBelowPovertyLevel),'pnorm')
+```{r}
+fit.AssaultDiplomaSq <- lm(Assault..Homicide.~No.High.School.Diploma+
+                         I(No.High.School.Diploma^2),data=povertyDataset)
 
-require(nortest)
-lillie.test(rstandard(fit.FirearmBelowPovertyLevel))
+plot(povertyDataset$No.High.School.Diploma, povertyDataset$Assault..Homicide.)
+curve(predict(fit.AssaultDiplomaSq, 
+              newdata=data.frame(No.High.School.Diploma=x)),add=T)
 
-summary(fit.FirearmBelowPovertyLevel)
+summary(fit.AssaultDiplomaSq)
+ks.test(rstandard(fit.AssaultDiplomaSq), 'pnorm')
 
-fit.AssaultBelowPovertyLevel = lm(Assault..Homicide.~Below.Poverty.Level,data=povertyDataset) #model za regresiju
+hist(rstandard(fit.AssaultDiplomaSq))
+qqnorm(rstandard(fit.AssaultDiplomaSq))
+qqline(rstandard(fit.AssaultDiplomaSq))
+```
+Korištenjem dohodka po glavi dobivamo ne toliko dobar model, ali iz grafa možemo
+uočiti koliko ima manje zločina u prosječno bogatijim kvartovima.
 
-plot(povertyDataset$Assault..Homicide.,povertyDataset$Below.Poverty.Level) #graficki prikaz podataka
+```{r}
+fit.AssaultIncome <- lm(Assault..Homicide.~Per.Capita.Income,data=povertyDataset)
+plot(povertyDataset$Per.Capita.Income, povertyDataset$Assault..Homicide.)
+lines(povertyDataset$Per.Capita.Income, fit.AssaultIncome$fitted.values)
+summary(fit.AssaultIncome)
+ks.test(rstandard(fit.AssaultIncome), 'pnorm')
 
-selected.model = fit.AssaultBelowPovertyLevel
+hist(rstandard(fit.AssaultIncome))
+qqnorm(rstandard(fit.AssaultIncome))
+qqline(rstandard(fit.AssaultIncome))
+```
+Primjenom transformacije logaritmom nad ulaznim podacima Per Capita Income
+dobivamo puno bolji rezultat.
 
-#histogrami
-hist((selected.model$residuals))
-hist(rstandard(selected.model))
+```{r}
+fit.AssaultIncome <- lm(Assault..Homicide.~log(Per.Capita.Income),data=povertyDataset)
+plot(povertyDataset$Per.Capita.Income, povertyDataset$Assault..Homicide.)
+curve(predict(fit.AssaultIncome, 
+              newdata=data.frame(Per.Capita.Income=x)),add=T)
+summary(fit.AssaultIncome)
+ks.test(rstandard(fit.AssaultIncome), 'pnorm')
 
-#q-q plot
-qqnorm(rstandard(selected.model))
-qqline(rstandard(selected.model))
-
-#KS test na normalnost 
-ks.test(rstandard(fit.AssaultBelowPovertyLevel),'pnorm')
-
-require(nortest)
-lillie.test(rstandard(fit.AssaultBelowPovertyLevel))
-summary(fit.AssaultBelowPovertyLevel)
-
-fit.FirearmDependency = lm(Firearm.related~Dependency,data=povertyDataset) #model za regresiju
-
-plot(povertyDataset$Firearm.related,povertyDataset$Dependency) #graficki prikaz podataka
-
-selected.model = fit.FirearmDependency
-
-#histogrami
-hist((selected.model$residuals))
-hist(rstandard(selected.model))
-
-#q-q plot
-qqnorm(rstandard(selected.model))
-qqline(rstandard(selected.model))
-
-#KS test na normalnost 
-ks.test(rstandard(fit.FirearmDependency),'pnorm')
-
-require(nortest)
-lillie.test(rstandard(fit.FirearmDependency))
-
-summary(fit.FirearmDependency)
-
-fit.AssaultDependency = lm(Assault..Homicide.~Dependency,data=povertyDataset) #model za regresiju
-
-plot(povertyDataset$Assault..Homicide.,povertyDataset$Dependency) #graficki prikaz podataka
-
-selected.model = fit.AssaultDependency
-
-#histogrami
-hist((selected.model$residuals))
-hist(rstandard(selected.model))
-
-#q-q plot
-qqnorm(rstandard(selected.model))
-qqline(rstandard(selected.model))
-
-#KS test na normalnost 
-ks.test(rstandard(fit.AssaultDependency),'pnorm')
-
-require(nortest)
-lillie.test(rstandard(fit.AssaultDependency))
-summary(fit.AssaultDependency)
-
+hist(rstandard(fit.AssaultIncome))
+qqnorm(rstandard(fit.AssaultIncome))
+qqline(rstandard(fit.AssaultIncome))
 ```
 
 
 ## Višestruka regresija
 
-```{r visestruke regresija}
+Prije procjene modela višestruke regresije trebamo provjeriti jesu li varijable
+međusobno zavisne. Ako nemaju vrlo visoku korelaciju možemo ih koristiti zajedno
+u modeliranju. Već smo pokazali neke varijable koje imaju veliku korelaciju.
 
-cor(cbind(povertyDataset$Below.Poverty.Level,povertyDataset$Per.Capita.Income,povertyDataset$Crowded.Housing,povertyDataset$Dependency,povertyDataset$No.High.School.Diploma,povertyDataset$Unemployment)) # provjera korelacijskih koeficijenata za sve parove regresora
 
-fit.Firearm1 = lm(Firearm.related ~ Unemployment + Below.Poverty.Level, povertyDataset) 
-summary(fit.Firearm1)
+Kao što smo mogli očekivati nezaposlenost i siromaštvo objašnjavaju iste efekte
+u podacima te nećemo dobiti puno bolji model nego samo sa korištenjem siromaštva.
+Testirali smo i s drugim varijablama u kombinaciji sa nezaposlenošću i zaključili
+smo da 
 
-fit.Firearm4 = lm(Firearm.related ~ No.High.School.Diploma + Unemployment, povertyDataset) 
-summary(fit.Firearm4)
-
-fit.Firearm5 = lm(Firearm.related ~ I(Below.Poverty.Level^2) + Per.Capita.Income, povertyDataset) 
-summary(fit.Firearm5)
-
-fit.Firearm6 = lm(Firearm.related ~ Per.Capita.Income + Crowded.Housing, povertyDataset) 
-summary(fit.Firearm6)
-
-fit.Firearm7 = lm(Firearm.related ~ Dependency + No.High.School.Diploma + Below.Poverty.Level, povertyDataset) 
-summary(fit.Firearm7)
-
-fit.Firearm8 = lm(Firearm.related ~ Dependency + No.High.School.Diploma + Unemployment, povertyDataset) 
-summary(fit.Firearm8)
-
-fit.Firearm9 = lm(Firearm.related ~ Dependency + No.High.School.Diploma + Unemployment + Below.Poverty.Level, povertyDataset) 
-summary(fit.Firearm9)
-
-fit.Assault1 = lm(Assault..Homicide. ~ Unemployment + Below.Poverty.Level, povertyDataset) 
-summary(fit.Assault1)
-
-fit.Assault4 = lm(Assault..Homicide. ~ No.High.School.Diploma + Unemployment, povertyDataset) 
-summary(fit.Assault4)
-
-fit.Assault5 = lm(Assault..Homicide. ~ I(Below.Poverty.Level^2) + Per.Capita.Income, povertyDataset) 
-summary(fit.Assault5)
-
-fit.Assault6 = lm(Assault..Homicide. ~ Per.Capita.Income + Crowded.Housing, povertyDataset) 
-summary(fit.Assault6)
-
-fit.Assault7 = lm(Assault..Homicide. ~ Dependency + No.High.School.Diploma + Below.Poverty.Level, povertyDataset) 
-summary(fit.Assault7)
-
-fit.Assault8 = lm(Assault..Homicide. ~ Dependency + No.High.School.Diploma + Unemployment, povertyDataset) 
-summary(fit.Assault8)
-
-fit.Assault9 = lm(Assault..Homicide. ~ Dependency + No.High.School.Diploma + Unemployment + Below.Poverty.Level, povertyDataset) 
-summary(fit.Assault9)
+```{r}
+fit1 <- lm(povertyDataset$Assault..Homicide.~povertyDataset$Unemployment +
+             povertyDataset$Below.Poverty.Level)
+summary(fit1)
 ```
+
+Nakon izrade više modela sa varijablom nezaposlenost zaključili smo da 
+nezaposlenost sama po sebi već jako dobro objašnjava podatke te kombiniranjem
+još s Dependency i No High School Diploma dobili smo najbolji model.
+
+```{r}
+fit2 <- lm(povertyDataset$Assault..Homicide.~povertyDataset$Unemployment +
+             povertyDataset$No.High.School.Diploma + povertyDataset$Dependency)
+summary(fit2)
+```
+
+Najbolje rezultate bez korištenja varijable nezaposlenosti dobivamo sa dolje
+modelom. Koristeći crowded housing nećemo dobiti bolji model jer već No High
+School Diploma opisuje taj efekt nad podacima.
+
+```{r}
+fit3 <- lm(povertyDataset$Assault..Homicide.~ povertyDataset$Dependency + 
+              povertyDataset$No.High.School.Diploma+povertyDataset$Below.Poverty.Level 
+           + povertyDataset$Per.Capita.Income)
+summary(fit3)
+```
+
