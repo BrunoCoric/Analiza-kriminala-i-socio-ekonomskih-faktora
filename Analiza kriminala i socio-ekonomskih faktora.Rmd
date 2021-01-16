@@ -84,6 +84,7 @@ s obzirom na vrijeme.
 
 ```{r}
 chisq.test(timeOfTheDayCount$n)
+as.factor(crimeDataset$PRIMARY.DESCRIPTION) %>% levels
 ```
 
 Odbacujemo nultu hipotezu i zaključujemo da da su proporcije različite.
@@ -99,7 +100,7 @@ opasni po život nalaze se u varijabli `dangCrimes`.
 ```{r, echo=FALSE, warning = FALSE}
 dangCrimes <- c("ARSON", "ASSAULT","BATTERY","BURGLARY","CRIM SEXUAL ASSAULT",
                 "CRIMINAL DAMAGE", "CRIMINAL SEXUAL ASSAULT","CRIMINAL TRESPASS"
-                , "HOMICIDE","KIDNAPPING")
+                , "HOMICIDE","KIDNAPPING", "OFFENSE INVOLVING CHILDREN")
 dangerousCrimes <- ifelse(crimeDataset$PRIMARY.DESCRIPTION %in% dangCrimes
                       ,"dangerous","less dangerous") %>% as.factor
 kable(table(dangerousCrimes))
@@ -130,13 +131,19 @@ description <- as.data.frame(table(description))
 krada <- description[which(description == 'MOTOR VEHICLE THEFT' |description =='ROBBERY' | description == 'THEFT' ),]
 narkotici <- description[which(description == 'NARCOTICS' |description =='OTHER NARCOTIC VIOLATION'),]
 
-barplot(krada$Freq, main = 'Učestalost zločina vezanih uz krađu')
-barplot(narkotici$Freq, main = 'Učestalost zločina vezanih uz narkotike')
+barplot(krada$Freq,names.arg = c("MOTOR VEHICLE THEFT", "ROBBERY",'THEFT'),main = 'Učestalost zločina vezanih uz krađu')
+barplot(narkotici$Freq,names.arg=c("NARCOTICS", "OTHER NARCOTIC VIOLATIONS"),main = 'Učestalost zločina vezanih uz narkotike')
+barplot(c(sum(krada$Freq),sum(narkotici$Freq)), names.arg=c("KRAĐA", "NARKOTICI"))
 ```
 Pošto nas zanima učestalost zločina vezanih uz krađu i narkotike provodimo test o jednoj proporciji. Gledat ćemo je li učestalost krađa veća od učestalosti kriminala vezanih za narkotike.
-Za nultu hipotezu uzimamo da je p = 0.5,a za alternativnu uzimamo p > 0.5
+Za nultu hipotezu uzimamo da je p = 0.5,a za alternativnu uzimamo p > 0.5.
+To znači da za nultu hipotezu uzimamo da je isti omjer krađa i kriminala vezanih
+uz narkotike.
 ```{r}
-res <- prop.test(x = sum(krada$Freq), n =sum(krada$Freq)+sum(narkotici$Freq), p = 0.5, correct = FALSE,alternative = "greater")
+ukupno <- matrix(c(sum(krada$Freq), sum(narkotici$Freq)), ncol=2)
+
+res <- prop.test(x = ukupno, n =sum(krada$Freq)+sum(narkotici$Freq),
+p = 0.5, correct = FALSE,alternative = "two.sided")
 res
 ```
 Kako smo dobili jako mali p-vrijednost onda imamo dovoljno dokaza za odbacivanje nulte hipoteze u korist alternativne hipoteze. Zbog toga zaključujemo da je učestalost zločina povezanih s krađom znatno veća od učestalosti zločina povezanih s narkoticima.
@@ -172,6 +179,12 @@ plot(povertyDataset$Crowded.Housing, povertyDataset$Assault..Homicide.)
 ```
 
 Neke varijable su jako korelirane. Što je i bilo za očekivati.
+```{r}
+cor(povertyDataset[c(-1,-2)])
+```
+
+
+Izvdojimo neke više korelirane varijable
 
 ```{r}
 cor(povertyDataset$Firearm.related, povertyDataset$Assault..Homicide.)
@@ -185,7 +198,7 @@ cor(povertyDataset$Dependency, povertyDataset$Per.Capita.Income)
 Izvodjiti ćemo neke zanimljivije jednostavnije modele.
 
 Pošto su Assault Homicide i Firearm related jako korelirani, modeli za njih
-su jako slični.
+su jako slični te smo odlučili prikazivati samo modele se Assault Homicide.
 
 
 Prvo procjenjujemo ubojstva pomoću varijable koja prikazuje nezaposlenost.
@@ -204,6 +217,24 @@ hist(rstandard(fit.AssaultUnemployment))
 qqnorm(rstandard(fit.AssaultUnemployment))
 qqline(rstandard(fit.AssaultUnemployment))
 ```
+
+Onda s nezaposlenošću procjenjujemo i Firearm related.
+
+```{r}
+fit.FirearmUnemployment <- lm(Firearm.related~Unemployment,data=povertyDataset)
+plot(povertyDataset$Unemployment, povertyDataset$Firearm.related)
+lines(povertyDataset$Unemployment, fit.FirearmUnemployment$fitted.values)
+summary(fit.FirearmUnemployment)
+ks.test(rstandard(fit.FirearmUnemployment), 'pnorm')
+
+hist(rstandard(fit.FirearmUnemployment))
+qqnorm(rstandard(fit.FirearmUnemployment))
+qqline(rstandard(fit.FirearmUnemployment))
+```
+Vidimo da je u oba slučaja varijabla Unemployment jako dobar procjenitelj i za
+Firearm Related i za Assault Homicide varijablu. U oba slučaja reziduali su
+približno distribuirani po normalno distribuciji.
+
 
 Sada koristimo varijablu No High School Diploma. Uočavamo da reziduali nisu ni
 približno distribuirani po normalnoj distribuciji te je pretpostavka linearne
@@ -233,7 +264,7 @@ curve(predict(fit.AssaultDiplomaSq,
               newdata=data.frame(No.High.School.Diploma=x)),add=T)
 
 summary(fit.AssaultDiplomaSq)
-ks.test(rstandard(fit.AssaultDiplomaSq), 'pnorm')
+ks.test(rstandard(fit.AssaultDiplomaSq), "pnorm")
 
 hist(rstandard(fit.AssaultDiplomaSq))
 qqnorm(rstandard(fit.AssaultDiplomaSq))
@@ -279,8 +310,6 @@ u modeliranju. Već smo pokazali neke varijable koje imaju veliku korelaciju.
 
 Kao što smo mogli očekivati nezaposlenost i siromaštvo objašnjavaju iste efekte
 u podacima te nećemo dobiti puno bolji model nego samo sa korištenjem siromaštva.
-Testirali smo i s drugim varijablama u kombinaciji sa nezaposlenošću i zaključili
-smo da 
 
 ```{r}
 fit1 <- lm(povertyDataset$Assault..Homicide.~povertyDataset$Unemployment +
@@ -288,14 +317,11 @@ fit1 <- lm(povertyDataset$Assault..Homicide.~povertyDataset$Unemployment +
 summary(fit1)
 ```
 
-Nakon izrade više modela sa varijablom nezaposlenost zaključili smo da 
-nezaposlenost sama po sebi već jako dobro objašnjava podatke te kombiniranjem
-još s No High School DIploma, Dependency i Per Capita income dobivamo najbolje
-rezultate.
-
-Kada smo uključili i logaritmom transformirani Per Capita Income i samo
-Per Capita Income dobili bolji model nego samo s logaritmom transformiranim.
+Kada smo uključili logaritmom transformirani Per Capita Income i samo
+Per Capita Income dobili smo bolji model nego samo s logaritmom transformiranim.
 Nismo sigurni zašto je to tako.
+Uključivanjem više varijabli, a pogotovo log(Per Capita Income) Unemployment
+varijabla je gubila na značajnosti za model.
 
 ```{r}
 fit2 <- lm(povertyDataset$Assault..Homicide.~povertyDataset$Unemployment +
@@ -303,5 +329,17 @@ fit2 <- lm(povertyDataset$Assault..Homicide.~povertyDataset$Unemployment +
            + log(povertyDataset$Per.Capita.Income)
            + povertyDataset$Per.Capita.Income + exp(povertyDataset$Dependency))
 summary(fit2)
+```
+
+Za Firearm Related najbolji smo model dobili bez uključivanja Unemployment.
+Iz same korelacijske tablice vidimo da je Assault Homicide općenito više
+korelirana s ostalim varijablama nego Firearm Related.
+
+```{r}
+fit3 <- lm(povertyDataset$Firearm.related~
+             povertyDataset$No.High.School.Diploma
+           + log(povertyDataset$Per.Capita.Income)
+           + povertyDataset$Per.Capita.Income + exp(povertyDataset$Dependency))
+summary(fit3)
 ```
 
