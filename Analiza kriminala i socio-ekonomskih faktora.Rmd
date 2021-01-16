@@ -145,6 +145,7 @@ stanovništva za određeni kvart):
 - postotak stanovništva koji su siromašni
 - postotak stanovništva koji žive u prenatrpanoj kući
 - postotak ljudi mlađih od 16 ili starijih od 64 koji su financijski
+ovisni o nekome
 - postotak ljudi bez diplome srednje škole
 - dohodak po stanovniku
 - postotak ljudi koji nisu zaposleni
@@ -153,6 +154,8 @@ Nacratat ćemo nekoliko grafova kako bi dobili uvid u to kakav odnos imaju
 varijable.
 
 Vidimo linearan efekt kod nezaposlenosti i siromaštva.
+Dependency izgleda kao eksponencijalna funkcija dok Per Capita Income kao
+logaritamska.
 
 ```{r}
 plot(povertyDataset$Unemployment, povertyDataset$Assault..Homicide.)
@@ -282,22 +285,18 @@ summary(fit1)
 
 Nakon izrade više modela sa varijablom nezaposlenost zaključili smo da 
 nezaposlenost sama po sebi već jako dobro objašnjava podatke te kombiniranjem
-još s Dependency i No High School Diploma dobili smo najbolji model.
+još s No High School DIploma, Dependency i Per Capita income dobivamo najbolje
+rezultate.
+
+Kada smo uključili i logaritmom transformirani Per Capita Income i samo
+Per Capita Income dobili bolji model nego samo s logaritmom transformiranim.
+Nismo sigurni zašto je to tako.
 
 ```{r}
 fit2 <- lm(povertyDataset$Assault..Homicide.~povertyDataset$Unemployment +
-             povertyDataset$No.High.School.Diploma + povertyDataset$Dependency)
+             povertyDataset$No.High.School.Diploma
+           + log(povertyDataset$Per.Capita.Income)
+           + povertyDataset$Per.Capita.Income + exp(povertyDataset$Dependency))
 summary(fit2)
-```
-
-Najbolje rezultate bez korištenja varijable nezaposlenosti dobivamo sa dolje
-modelom. Koristeći crowded housing nećemo dobiti bolji model jer već No High
-School Diploma opisuje taj efekt nad podacima.
-
-```{r}
-fit3 <- lm(povertyDataset$Assault..Homicide.~ povertyDataset$Dependency + 
-              povertyDataset$No.High.School.Diploma+povertyDataset$Below.Poverty.Level 
-           + povertyDataset$Per.Capita.Income)
-summary(fit3)
 ```
 
